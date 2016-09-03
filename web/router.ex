@@ -33,7 +33,7 @@ defmodule Wall.Router do
       get "/token", TokenController, :show
     end
 
-    get "/events/:token", EventController, :create
+    post "/events/:token", EventController, :create
   end
 
   defp put_account_token(conn, _params) do
