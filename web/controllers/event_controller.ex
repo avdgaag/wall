@@ -12,7 +12,7 @@ defmodule Wall.EventController do
       |> put_status(:created)
       |> render("show.json", event: event)
     else
-      {:error, changeset} ->
+      {:error, changeset} when is_map(changeset) ->
         conn
         |> put_status(:unprocessable_entity)
         |> render(Wall.ErrorView, "errors.json", changeset: changeset)
