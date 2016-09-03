@@ -43,8 +43,8 @@ defmodule Wall.Google do
         {:error, :unauthorized}
       {:ok, %OAuth2.Response{status_code: status_code, body: body}} when status_code in 200..299 ->
         {:ok, body}
-      {:ok, _response} ->
-        {:error, :unknown}
+      {:ok, %OAuth2.Response{status_code: status_code, body: body}} ->
+        {:error, "#{status_code}: #{body}"}
       {:error, %OAuth2.Error{reason: reason}} ->
         {:error, reason}
     end
