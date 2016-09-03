@@ -4,8 +4,7 @@ defmodule Wall.EventController do
   alias Wall.Event
 
   def create(conn, event_params) do
-    with {:ok, token} <-  Base.decode64(event_params["token"]),
-         {:ok, project_id} <- Phoenix.Token.verify(Wall.Endpoint, "token", token),
+    with {:ok, project_id} <- Wall.Token.verify(event_params["token"]),
          changeset = Event.changeset(%Event{}, Map.put(event_params, "project_id", project_id)),
          {:ok, event} <- Repo.insert(changeset)
     do

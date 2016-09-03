@@ -21,7 +21,7 @@ defmodule Wall.EventControllerTest do
 
   test "creates resource and confirms Github commit status hooks", %{conn: conn, params: params} do
     {:ok, project} = Repo.insert %Wall.Project{name: "My Project"}
-    token = Phoenix.Token.sign(Wall.Endpoint, "token", project.id) |> Base.encode64
+    token = Wall.Token.sign(project.id)
     conn = get conn, event_path(conn, :create, token), params
     assert json_response(conn, 201)["data"]["id"]
     assert Repo.get_by(Event, %{topic: "ci"})
@@ -38,7 +38,7 @@ defmodule Wall.EventControllerTest do
   end
 
   test "shows an error when the token is invalid but the project does not exist", %{conn: conn, params: params} do
-    token = Phoenix.Token.sign(Wall.Endpoint, "token", "invalid id") |> Base.encode64
+    token = Wall.Token.sign("invalid id")
     conn = get conn, event_path(conn, :create, token), params
     assert json_response(conn, 422)["errors"] == %{"project_id" => ["is invalid"]}
   end

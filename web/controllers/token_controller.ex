@@ -4,11 +4,8 @@ defmodule Wall.TokenController do
   plug :authorize_token
 
   def show(conn, %{"project_id" => project_id}) do
-    token = Wall.Endpoint
-    |> Phoenix.Token.sign("token", project_id)
-    |> Base.encode64
     conn
-    |> json(%{token: token})
+    |> json(%{token: Wall.Token.sign(project_id)})
   end
 
   defp authorize_token(conn, _options) do
