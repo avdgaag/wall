@@ -7,14 +7,14 @@ defmodule Wall.Token do
   def sign(message) do
     Wall.Endpoint
     |> Phoenix.Token.sign(@token_name, message)
-    |> Base.encode64
+    |> Base.url_encode64(padding: false)
   end
 
   @doc """
   Base64-decode and decrypt a string that was generated using Wall.Token.sign.
   """
   def verify(encoded_message) do
-    with {:ok, encrypted_message} <- Base.decode64(encoded_message),
+    with {:ok, encrypted_message} <- Base.url_decode64(encoded_message, padding: false),
          {:ok, message} <- Phoenix.Token.verify(Wall.Endpoint, @token_name, encrypted_message)
     do
       {:ok, message}
