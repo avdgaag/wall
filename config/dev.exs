@@ -43,8 +43,4 @@ config :wall, Wall.Repo,
 
 config :wall, :authstrategy, Wall.AuthStrategy.Google
 
-config :wall, :oauth,
-  client_id: "625826228011-0u212h65bec52jg7p32ddumkp2dakd4v.apps.googleusercontent.com",
-  client_secret: "24QzcAvXO_Zi3SmzGEG--k6q",
-  redirect_uri: "http://localhost:4000/auth/google/callback",
-  domain: "brightin.nl"
+import_config "dev.secret.exs"
