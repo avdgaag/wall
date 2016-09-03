@@ -14,9 +14,14 @@ defmodule Wall.EventControllerTest do
     end
   end
 
+  test "shows an error when the token is not base64-encoded", %{conn: conn, params: params} do
+    conn = get conn, event_path(conn, :create, "xyz"), params
+    assert json_response(conn, 422)["error"] == "invalid token"
+  end
+
   test "creates resource and confirms Github commit status hooks", %{conn: conn, params: params} do
     {:ok, project} = Repo.insert %Wall.Project{name: "My Project"}
-    token = Phoenix.Token.sign(Wall.Endpoint, "token", project.id)
+    token = Phoenix.Token.sign(Wall.Endpoint, "token", project.id) |> Base.encode64
     conn = get conn, event_path(conn, :create, token), params
     assert json_response(conn, 201)["data"]["id"]
     assert Repo.get_by(Event, %{topic: "ci"})
