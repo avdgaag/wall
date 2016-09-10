@@ -4,6 +4,9 @@ import Html exposing (..)
 import Html.Attributes exposing (class, title, id)
 import Html.Events exposing (onClick)
 import Json.Decode as Json exposing ((:=))
+import Date exposing (Date)
+import Time exposing (Time)
+import RelativeDate exposing (Ago(..))
 
 
 -- MODEL
@@ -14,6 +17,7 @@ type alias Project =
     , name : String
     , masterBuildStatus : BuildStatus
     , latestBuildStatus : BuildStatus
+    , latestDeployment : Maybe Date
     }
 
 
@@ -22,6 +26,7 @@ type alias RawProject =
     , name : String
     , masterBuildStatus : Maybe String
     , latestBuildStatus : Maybe String
+    , latestDeployment : Maybe String
     }
 
 
@@ -59,8 +64,8 @@ update msg model =
 -- VIEW
 
 
-view : Project -> Html Msg
-view project =
+view : Maybe Time -> Project -> Html Msg
+view now project =
     let
         domId =
             "project-" ++ (toString project.id)
@@ -71,6 +76,7 @@ view project =
             ]
             [ viewBuildStatus project
             , viewTitle project.name
+            , viewDeployment now project.latestDeployment
             , viewControls project
             ]
 
@@ -86,6 +92,53 @@ minibutton icon description msg =
             [ class ("octicon octicon-" ++ icon) ]
             []
         ]
+
+
+translateTimeAgo : Ago -> String
+translateTimeAgo ago =
+    case ago of
+        Years i ->
+            (toString i) ++ " years ago"
+
+        Months i ->
+            (toString i) ++ " months ago"
+
+        Weeks i ->
+            (toString i) ++ " weeks ago"
+
+        Days i ->
+            (toString i) ++ " days ago"
+
+        Hours i ->
+            (toString i) ++ " hours ago"
+
+        Minutes i ->
+            (toString i) ++ " minutes ago"
+
+        Seconds i ->
+            (toString i) ++ " seconds ago"
+
+        JustNow ->
+            "just now"
+
+
+viewDeployment : Maybe Time -> Maybe Date -> Html Msg
+viewDeployment now date =
+    let
+        result =
+            date
+                |> Maybe.map Date.toTime
+                |> Maybe.map2 RelativeDate.timeAgoInWords now
+                |> Maybe.map translateTimeAgo
+    in
+        case result of
+            Nothing ->
+                div [] []
+
+            Just result ->
+                div
+                    [ class "project__deployment" ]
+                    [ text result ]
 
 
 viewControls : Project -> Html Msg
@@ -142,11 +195,12 @@ viewBuildBadge icon buildStatus =
 
 decoder : Json.Decoder Project
 decoder =
-    Json.object4 Project
+    Json.object5 Project
         ("id" := Json.int)
         ("name" := Json.string)
         ("masterBuildStatus" := buildStatusDecoder)
         ("latestBuildStatus" := buildStatusDecoder)
+        ("latestDeployment" := latestDeploymentDecoder)
 
 
 parseBuildStatus : String -> Result String BuildStatus
@@ -166,6 +220,30 @@ parseBuildStatus value =
 
         _ ->
             Err "Unexpected build status encountered"
+
+
+parseLatestDeployment : Maybe String -> Result String (Maybe Date)
+parseLatestDeployment value =
+    case value of
+        Nothing ->
+            Ok Nothing
+
+        Just str ->
+            str
+                |> Date.fromString
+                |> Result.map Just
+
+
+latestDeploymentDecoder : Json.Decoder (Maybe Date)
+latestDeploymentDecoder =
+    let
+        nullOrStringDecoder =
+            Json.oneOf
+                [ (Json.null Nothing)
+                , Json.map Just Json.string
+                ]
+    in
+        Json.customDecoder nullOrStringDecoder parseLatestDeployment
 
 
 buildStatusDecoder : Json.Decoder BuildStatus
@@ -191,5 +269,10 @@ parseRawProject inputProject =
                 |> Maybe.withDefault ""
                 |> parseBuildStatus
                 |> Result.withDefault Unknown
+
+        latestDeployment =
+            inputProject.latestDeployment
+                |> parseLatestDeployment
+                |> Result.withDefault Nothing
     in
-        Project inputProject.id inputProject.name masterBuildStatus latestBuildStatus
+        Project inputProject.id inputProject.name masterBuildStatus latestBuildStatus latestDeployment

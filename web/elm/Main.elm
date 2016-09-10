@@ -9,6 +9,7 @@ import Project exposing (Project)
 import ProjectList exposing (ProjectList)
 import Ports
 import ProjectForm exposing (ProjectForm)
+import Time exposing (Time)
 
 
 type alias User =
@@ -21,6 +22,7 @@ type alias Model =
     { projects : ProjectList
     , projectForm : ProjectForm
     , user : User
+    , now : Maybe Time
     }
 
 
@@ -40,7 +42,7 @@ init user =
                 , Cmd.map ProjectFormMsg projectFormEffects
                 ]
     in
-        ( Model ProjectList.initialModel projectFormModel user, effects )
+        ( Model ProjectList.initialModel projectFormModel user Nothing, effects )
 
 
 
@@ -49,6 +51,7 @@ init user =
 
 type Msg
     = NoOp
+    | Tick Time
     | ApiMsg Api.Msg
     | ProjectCreated Project
     | ProjectUpdated Project
@@ -63,6 +66,9 @@ update msg model =
     case msg of
         NoOp ->
             model ! []
+
+        Tick time ->
+            { model | now = Just time } ! []
 
         ApiMsg msg ->
             case msg of
@@ -144,7 +150,7 @@ view model =
         ]
         [ viewNewProjectForm model
         , viewNav model.user.name
-        , Html.App.map ProjectMsg <| ProjectList.view model.projects
+        , Html.App.map ProjectMsg <| ProjectList.view model.projects model.now
           --        , div [ class "events" ] []
         ]
 
@@ -195,6 +201,7 @@ subscriptions model =
         [ Ports.newProjectNotifications (ProjectCreated << Project.parseRawProject)
         , Ports.updateProjectNotifications (ProjectUpdated << Project.parseRawProject)
         , Ports.deleteProjectNotifications (ProjectDestroyed << Project.parseRawProject)
+        , Time.every Time.second Tick
         ]
 
 

@@ -13,7 +13,8 @@ defmodule Wall.ProjectControllerTest do
       %{"id" => 1,
         "name" => "project 1",
         "masterBuildStatus" => nil,
-        "latestBuildStatus" => nil}
+        "latestBuildStatus" => nil,
+        "latestDeployment" => nil}
     ]
   end
 

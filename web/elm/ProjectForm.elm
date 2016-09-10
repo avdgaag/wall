@@ -61,7 +61,7 @@ toProject projectForm =
     in
         case projectForm.id of
             Just id ->
-                Ok <| Project id name Project.Unknown Project.Unknown
+                Ok <| Project id name Project.Unknown Project.Unknown Nothing
 
             Nothing ->
                 Err "could not create Project without an ID"

@@ -3,6 +3,7 @@ module ProjectList exposing (..)
 import Project exposing (Project, Msg)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
+import Time exposing (Time)
 
 
 -- MODEL
@@ -12,6 +13,7 @@ type alias ProjectList =
     List Project
 
 
+initialModel : ProjectList
 initialModel =
     []
 
@@ -58,13 +60,13 @@ isEmpty projectList =
 -- VIEW
 
 
-view : ProjectList -> Html Project.Msg
-view projectList =
+view : ProjectList -> Maybe Time -> Html Project.Msg
+view projectList now =
     if isEmpty projectList then
         viewPlaceholder
     else
         div [ class "projects-list" ]
-            (List.map Project.view projectList)
+            (List.map (Project.view now) projectList)
 
 
 viewPlaceholder : Html msg
