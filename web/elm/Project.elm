@@ -43,6 +43,43 @@ type Msg
     | DestroyProject Project
 
 
+translateTimeAgo : Ago -> String
+translateTimeAgo ago =
+    case ago of
+        Years i ->
+            (toString i) ++ " years ago"
+
+        Months i ->
+            (toString i) ++ " months ago"
+
+        Weeks i ->
+            (toString i) ++ " weeks ago"
+
+        Days i ->
+            (toString i) ++ " days ago"
+
+        Hours i ->
+            (toString i) ++ " hours ago"
+
+        Minutes i ->
+            (toString i) ++ " minutes ago"
+
+        Seconds i ->
+            (toString i) ++ " seconds ago"
+
+        JustNow ->
+            "just now"
+
+
+deploymentAge : Maybe Time -> Project -> Maybe String
+deploymentAge now project =
+    project
+        |> .latestDeployment
+        |> Maybe.map Date.toTime
+        |> Maybe.map2 RelativeDate.timeAgoInWords now
+        |> Maybe.map translateTimeAgo
+
+
 
 -- UPDATE
 
@@ -76,7 +113,7 @@ view now project =
             ]
             [ viewBuildStatus project
             , viewTitle project.name
-            , viewDeployment now project.latestDeployment
+            , viewDeployment now project
             , viewControls project
             ]
 
@@ -94,51 +131,16 @@ minibutton icon description msg =
         ]
 
 
-translateTimeAgo : Ago -> String
-translateTimeAgo ago =
-    case ago of
-        Years i ->
-            (toString i) ++ " years ago"
+viewDeployment : Maybe Time -> Project -> Html Msg
+viewDeployment now project =
+    case deploymentAge now project of
+        Nothing ->
+            div [] []
 
-        Months i ->
-            (toString i) ++ " months ago"
-
-        Weeks i ->
-            (toString i) ++ " weeks ago"
-
-        Days i ->
-            (toString i) ++ " days ago"
-
-        Hours i ->
-            (toString i) ++ " hours ago"
-
-        Minutes i ->
-            (toString i) ++ " minutes ago"
-
-        Seconds i ->
-            (toString i) ++ " seconds ago"
-
-        JustNow ->
-            "just now"
-
-
-viewDeployment : Maybe Time -> Maybe Date -> Html Msg
-viewDeployment now date =
-    let
-        result =
-            date
-                |> Maybe.map Date.toTime
-                |> Maybe.map2 RelativeDate.timeAgoInWords now
-                |> Maybe.map translateTimeAgo
-    in
-        case result of
-            Nothing ->
-                div [] []
-
-            Just result ->
-                div
-                    [ class "project__deployment" ]
-                    [ text result ]
+        Just result ->
+            div
+                [ class "project__deployment" ]
+                [ text result ]
 
 
 viewControls : Project -> Html Msg

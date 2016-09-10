@@ -10,6 +10,7 @@ import ProjectList exposing (ProjectList)
 import Ports
 import ProjectForm exposing (ProjectForm)
 import Time exposing (Time)
+import Events
 
 
 type alias User =
@@ -151,7 +152,7 @@ view model =
         [ viewNewProjectForm model
         , viewNav model.user.name
         , Html.App.map ProjectMsg <| ProjectList.view model.projects model.now
-          --        , div [ class "events" ] []
+        , Events.view model.now model.projects
         ]
 
 
