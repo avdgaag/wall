@@ -1,6 +1,6 @@
 port module Ports exposing (..)
 
-import Project exposing (RawProject)
+import Model exposing (RawProject)
 
 
 port newProjectNotifications : (RawProject -> msg) -> Sub msg
