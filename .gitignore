@@ -24,4 +24,5 @@ erl_crash.dump
 /config/prod.secret.exs
 /config/dev.secret.exs
 web/elm/elm-stuff
+web/elm/tests/elm-stuff
 web/static/vendor/main.js

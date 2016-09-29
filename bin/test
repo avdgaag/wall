@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+test_elixir() {
+    export MIX_ENV=test
+    mix do ecto.migrate, test
+}
+
+test_elm() {
+    cd web/elm
+    ../../node_modules/elm/binwrappers/elm test
+}
+
+main() {
+    test_elixir && test_elm
+}
+
+main
